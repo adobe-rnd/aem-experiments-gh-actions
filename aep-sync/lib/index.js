@@ -10,6 +10,10 @@ const { context: imsContext, getToken, getTokenData } = require('@adobe/aio-lib-
 const BOT_NAME = 'aem-experimentation-aep-sync';
 const client = new http.HttpClient(BOT_NAME);
 
+function getManifestPath(pagePath) {
+  return `experiments${`${pagePath.replace(/\.md$/, '')}`}`;
+}
+
 async function getExperimentIdFromDocument(domain, path) {
   const url = `${domain}${path.replace(/index.md$/, '').replace(/\.md$/, '')}`;
   const response = await client.get(url);
@@ -105,6 +109,7 @@ async function run() {
     const patToken = core.getInput('git_pat_token', { required: true });
 
     const experimentId = await getExperimentIdFromDocument(prodHost, pagePath);
+    console.log('Experiment Id', experimentId);
     if (!experimentId) {
       return;
     }
@@ -117,8 +122,11 @@ async function run() {
       ims_org_id,
     });
     const config = await getExperimentConfigFromAep(experimentId, ims_org_id, accessToken);
+    console.log('Experiment Config', config);
     const manifest = await convertExperimentConfigToManifest(config);
-    const manifestPath = `experiments/${pagePath}/manifest.json`;
+    console.log('Experiment Manifest', manifest);
+    const manifestPath = getManifestPath(pagePath);
+    console.log('Manifest Path', manifestPath);
     await addManifestToRepo(owner, repo, ref, manifestPath, manifest, patToken);
   } catch (err) {
     core.setFailed(err.message);
