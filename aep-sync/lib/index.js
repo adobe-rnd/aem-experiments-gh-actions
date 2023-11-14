@@ -96,7 +96,7 @@ async function run() {
     const owner = 'ramboz';
     const repo = 'aem-experience-decisioning-demo';
     const ref = 'main';
-    const prodHost = core.getInput('aio_console_technical_acccount_id', { required: false })
+    const prodHost = core.getInput('prod_host', { required: false })
       || `https://${ref}--${repo}--${owner}.hlx.live`;
 
     const pagePath = core.getInput('resource_path', { required: true }); // '/index.md';
