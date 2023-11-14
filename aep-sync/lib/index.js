@@ -91,6 +91,7 @@ async function addManifestToRepo(owner, repo, ref, path, manifest, token) {
 
 async function run() {
   try {
+    console.log('Start…');
     const client_id = core.getInput('aio_console_client_id', { required: true });
     const client_secret = core.getInput('aio_console_client_secret', { required: true });
     const ims_org_id = core.getInput('aio_console_ims_org_id', { required: true });
@@ -101,10 +102,13 @@ async function run() {
     const [owner, repo] = git_repo.split('/');
     const ref = core.getInput('git_ref', { required: true });
 
+    console.log('Params…');
     const prodHost = core.getInput('prod_host', { required: false })
       || `https://${ref}--${repo}--${owner}.hlx.live`;
 
-    const pagePath = core.getInput('resource_path', { required: true }); // '/index.md';
+      console.log('Prod Host', prodHost);
+
+    const pagePath = core.getInput('resource_path', { required: true });
 
     const patToken = core.getInput('git_pat_token', { required: true });
 
