@@ -4,12 +4,17 @@
   "description": "",
   "scripts": {
     "prepare": "husky install",
+    "install": "lerna clean && lerna init --hoist",
+    "build": "lerna exec --scope 'aem-experiments-gh-action-*' npm run build"
   },
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
     "husky": "8.0.3",
+    "lerna": "7.4.2",
     "lint-staged": "15.1.0",
+    "nx": "17.1.2",
     "prettier": "3.1.0"
   },
+  "workspaces": ["aep-sync"]
 }
