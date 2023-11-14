@@ -11,7 +11,7 @@ const BOT_NAME = 'aem-experimentation-aep-sync';
 const client = new http.HttpClient(BOT_NAME);
 
 function getManifestPath(pagePath) {
-  return `experiments${`${pagePath.replace(/\.md$/, '')}`}`;
+  return `experiments${`${pagePath.replace(/\.md$/, '')}`}.manifest.json`;
 }
 
 async function getExperimentIdFromDocument(domain, path) {
@@ -27,6 +27,35 @@ async function getExperimentIdFromDocument(domain, path) {
 
   const experimentId = dom.window.document.querySelector('head>meta[name="experiment"]')?.content.trim();
   return experimentId;
+}
+
+async function getShaForExistingManifest(octokit, owner, repo, ref, path) {
+  try {
+    const result = await octokit.rest.repos.getContent({ owner, repo, ref, path });
+    console.log(111, result);
+    return result.data.sha;
+  } catch (err) {
+    console.log(222, err);
+    return undefined;
+  }
+}
+
+async function deleteManifestFromRepo(octokit, owner, repo, ref, path, sha, experimentId) {
+  const user = {
+    name: BOT_NAME,
+    email: 'ramboz@adobe.com',
+  };
+
+  return octokit.rest.repos.deleteFile({
+    owner,
+    repo,
+    branch: ref,
+    path,
+    sha,
+    message: `chore: delete manifest for removed AEP experiment ${experimentId}`,
+    committer: user,
+    author: user,
+  });
 }
 
 async function getAccessTokenFromDeveloperConsole(options) {
@@ -55,24 +84,13 @@ async function convertExperimentConfigToManifest(config) {
   return config;
 }
 
-async function addManifestToRepo(owner, repo, ref, path, manifest, token) {
+async function addManifestToRepo(octokit, owner, repo, ref, path, manifest, sha) {
   await mkdir(dirname(path), { recursive: true });
   await writeFile(path, JSON.stringify(manifest));
 
-  const octokit = github.getOctokit(token);
-
-  let sha;
-  try {
-    const result = await octokit.rest.repos.getContent({ owner, repo, ref, path });
-    sha = result.data.sha;
-  } catch (err) {
-    // file does not exist yet
-    sha = undefined;
-  }
-
   const user = {
     name: BOT_NAME,
-    email: '<>',
+    email: 'ramboz@adobe.com',
   };
 
   const res = await octokit.rest.repos.createOrUpdateFileContents({
@@ -95,8 +113,8 @@ async function run() {
     const client_id = core.getInput('aio_console_client_id', { required: true });
     const client_secret = core.getInput('aio_console_client_secret', { required: true });
     const ims_org_id = core.getInput('aio_console_ims_org_id', { required: true });
-    const technical_account_email = core.getInput('aio_console_technical_acccount_email', { required: true });
-    const technical_account_id = core.getInput('aio_console_technical_acccount_id', { required: true });
+    const technical_account_email = core.getInput('aio_console_technical_account_email', { required: true });
+    const technical_account_id = core.getInput('aio_console_technical_account_id', { required: true });
     
     const git_repo = core.getInput('git_repo', { required: true });
     const [owner, repo] = git_repo.split('/');
@@ -112,9 +130,18 @@ async function run() {
 
     const patToken = core.getInput('git_pat_token', { required: true });
 
+
+    const manifestPath = getManifestPath(pagePath);
+    console.log('Manifest Path', manifestPath);
+
+    const octokit = github.getOctokit(patToken);
+
     const experimentId = await getExperimentIdFromDocument(prodHost, pagePath);
     console.log('Experiment Id', experimentId);
-    if (!experimentId) {
+    const manifestSha = await getShaForExistingManifest(octokit, owner, repo, ref, manifestPath)
+    console.log('Manifest Sha', manifestSha);
+    if (!experimentId && manifestSha) {
+      await deleteManifestFromRepo(octokit, owner, repo, ref, manifestPath, manifestSha, experimentId);
       return;
     }
 
@@ -129,9 +156,7 @@ async function run() {
     console.log('Experiment Config', config);
     const manifest = await convertExperimentConfigToManifest(config);
     console.log('Experiment Manifest', manifest);
-    const manifestPath = getManifestPath(pagePath);
-    console.log('Manifest Path', manifestPath);
-    await addManifestToRepo(owner, repo, ref, manifestPath, manifest, patToken);
+    await addManifestToRepo(octokit, owner, repo, ref, manifestPath, manifest, manifestSha, patToken);
   } catch (err) {
     core.setFailed(err.message);
   }

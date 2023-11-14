@@ -10,10 +10,10 @@ inputs:
   aio_console_ims_org_id:
     description: The ims org id from the credentials for your project in the developer console
     required: true
-  aio_console_technical_acccount_email:
+  aio_console_technical_account_email:
     description: The technical account email from the credentials for your project in the developer console
     required: true
-  aio_console_technical_acccount_id:
+  aio_console_technical_account_id:
     description: The technical account id from the credentials for your project in the developer console
     required: true
   resource_path:
