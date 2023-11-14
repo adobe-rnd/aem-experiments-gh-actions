@@ -116,7 +116,7 @@ async function run() {
       technical_account_id,
       ims_org_id,
     });
-    const config = await getExperimentConfigFromAep(experimentId, imsOrgId, accessToken);
+    const config = await getExperimentConfigFromAep(experimentId, ims_org_id, accessToken);
     const manifest = await convertExperimentConfigToManifest(config);
     const manifestPath = `experiments/${pagePath}/manifest.json`;
     await addManifestToRepo(owner, repo, ref, manifestPath, manifest, patToken);
