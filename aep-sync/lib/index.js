@@ -93,9 +93,10 @@ async function run() {
     const technical_account_email = core.getInput('aio_console_technical_acccount_email', { required: true });
     const technical_account_id = core.getInput('aio_console_technical_acccount_id', { required: true });
     
-    const owner = 'ramboz';
-    const repo = 'aem-experience-decisioning-demo';
-    const ref = 'main';
+    const git_repo = core.getInput('git_repo', { required: true });
+    const [owner, repo] = git_repo.split('/');
+    const ref = core.getInput('git_ref', { required: true });
+
     const prodHost = core.getInput('prod_host', { required: false })
       || `https://${ref}--${repo}--${owner}.hlx.live`;
 

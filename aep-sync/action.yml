@@ -22,6 +22,12 @@ inputs:
   git_pat_token:
     description: The PAT token to be used to write the manifest to the git repo
     required: true
+  git_repo:
+    description: The owner/repo to push the manifest to
+    required: true
+  git_ref:
+    description: The branch to push the manifest to
+    required: true
   prod_host:
     description: The production host to use, or falls back to the owner/repo/ref that triggered the action
     required: false
