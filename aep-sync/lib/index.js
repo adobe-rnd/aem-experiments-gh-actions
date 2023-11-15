@@ -18,6 +18,10 @@ function getManifestPath(root, pagePath) {
 async function getExperimentIdFromDocument(host, path) {
   const url = `${host}${path.replace(/index.md$/, '').replace(/\.md$/, '')}`;
   const response = await client.get(url);
+  if (res.message.statusCode === 404) {
+    return null;
+  }
+
   const htmlString = await response.readBody();
   const dom = new JSDOM(htmlString);
 
