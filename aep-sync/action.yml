@@ -27,7 +27,8 @@ inputs:
     required: true
   git_ref:
     description: The branch to push the manifest to
-    required: true
+    required: false
+    default: 'main'
   prod_host:
     description: The production host to use, or falls back to the owner/repo/ref that triggered the action
     required: false
