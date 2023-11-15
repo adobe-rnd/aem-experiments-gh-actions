@@ -9,11 +9,6 @@ const { context: imsContext, getToken } = require('@adobe/aio-lib-ims');
 
 const BOT_NAME = 'aem-experimentation-aep-sync';
 
-const BOT_USER = {
-  name: BOT_NAME,
-  email: 'ramboz@adobe.com',
-};
-
 const client = new http.HttpClient(BOT_NAME);
 
 function getManifestPath(root, pagePath) {
@@ -53,8 +48,6 @@ async function deleteManifestFromRepo(octokit, owner, repo, ref, path, sha, expe
     path,
     sha,
     message: `chore: delete manifest for removed AEP experiment ${experimentId}`,
-    committer: BOT_USER,
-    author: BOT_USER,
   });
 }
 
@@ -95,8 +88,6 @@ async function addManifestToRepo(octokit, owner, repo, ref, path, manifest, sha)
     path,
     message: `chore: update AEP experiment manifest cache for ${manifest.id}`,
     content: Base64.encode(JSON.stringify(manifest)),
-    committer: BOT_USER,
-    author: BOT_USER,
     sha,
   });
   return res.data.content.path;
@@ -143,6 +134,11 @@ async function run() {
     });
     const config = await getExperimentConfigFromAep(experimentId, ims_org_id, accessToken);
     const manifest = await convertExperimentConfigToManifest(config);
+    if (manifestPath) {
+      console.log('Updating manifest for experiment:', experimentId);
+    } else {
+      console.log('Creating manifest for experiment:', experimentId);
+    }
     await addManifestToRepo(octokit, owner, repo, ref, manifestPath, manifest, manifestSha, patToken);
   } catch (err) {
     core.setFailed(err.message);
