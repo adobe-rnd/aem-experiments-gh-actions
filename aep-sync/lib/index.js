@@ -83,20 +83,20 @@ async function getExperimentIdFromDocument(context) {
 }
 
 /**
- * Get the SHA hash for the manifest if it exists in the repo
+ * Get the existing manifest if it exists in the repo
  * @param {object} context The action context object
  * @param {string} context.owner The owner/org for the git repo
  * @param {string} context.repo The git repo name
  * @param {string} context.ref The branch for the git repo
  * @param {object} context.octokit A reference to the octokit client
  * @param {string} manifestPath The path to the manifest in the git repo 
- * @returns a string with the manifest SHA hash, or null if it does not exist in the git repo
+ * @returns an object representing the manifest, or null if it does not exist in the git repo
  */
-async function getShaForExistingManifest(context, manifestPath) {
+async function getExistingManifestFromRepo(context, manifestPath) {
   const { owner, repo, ref, octokit } = context;
   try {
     const result = await octokit.rest.repos.getContent({owner, repo, ref, path: manifestPath });
-    return result.data.sha;
+    return result.data;
   } catch (err) {
     return null;
   }
@@ -109,20 +109,21 @@ async function getShaForExistingManifest(context, manifestPath) {
  * @param {string} context.repo The git repo name
  * @param {string} context.ref The branch for the git repo
  * @param {object} context.octokit A reference to the octokit client
- * @param {string} manifestPath The path to the manifest in the git repo
- * @param {string} sha The SHA hash for the manifest in the git repo
+ * @param {object} manifest An object representing the manifest to be deleted
+ * @param {string} manifest.path The path to the manifest in the git repo
+ * @param {string} manifest.sha The SHA hash for the manifest in the git repo
  * @param {string} experimentId The id for the experiment
  * @returns a promise that the file was deleted from the repo
  */
-async function deleteManifestFromRepo(context, manifestPath, sha, experimentId) {
+async function deleteManifestFromRepo(context, manifest, experimentId) {
   const { owner, repo, ref, octokit } = context;
   console.debug('Deleting stray manifest for experiment:', experimentId);
   return octokit.rest.repos.deleteFile({
     owner,
     repo,
     branch: ref,
-    path: manifestPath,
-    sha,
+    path: manifest.path,
+    sha: manifest.sha,
     message: `chore: delete manifest for removed AEP experiment ${experimentId}`,
   });
 }
@@ -230,22 +231,30 @@ async function run() {
 
     const manifestPath = getManifestPathInRepo(context, 'experiments');
     const experimentId = await getExperimentIdFromDocument(context);
-    const manifestSha = await getShaForExistingManifest(context, manifestPath);
+    const oldManifest = await getExistingManifestFromRepo(context, manifestPath);
 
     // Clean up stray manifests if the page was unpublished or the metadata removed
     if (!experimentId && manifestSha) {
-      await deleteManifestFromRepo(context, manifestPath, manifestSha, experimentId);
+      await deleteManifestFromRepo(context, oldManifest, experimentId);
       return;
     }
 
-    // Cache the AEP manifest into the repo so it ends up in the code-bus
+    // Fetch the AEP manifest
     const accessToken = await getImsAccessToken(context);
     const config = await getExperimentConfigFromAep(context, experimentId, accessToken);
     if (!config) {
       return;
     }
+
+    // Check if the manifest has changed
     const manifest = await convertExperimentConfigToManifest(config);
-    await addOrUpdateManifestInRepo(context, manifestPath, manifestSha, manifest);
+    if (oldManifest.content.replace(/\n/g, '') === Base64.encode(JSON.stringify(manifest))) {
+      console.debug('Manifest is already up-to-date');
+      return;
+    }
+
+    // Persist the new manifest in the git repo
+    await addOrUpdateManifestInRepo(context, manifestPath, oldManifest.sha, manifest);
   } catch (err) {
     core.setFailed(err.message);
   }
