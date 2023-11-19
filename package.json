@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "prepare": "husky install",
-    "install": "lerna clean && lerna init --hoist",
+    "install": "lerna clean",
     "build": "lerna exec --scope 'aem-experiments-gh-action-*' npm run build"
   },
   "author": "",

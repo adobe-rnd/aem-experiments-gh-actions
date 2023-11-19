@@ -9,6 +9,12 @@ const { context: imsContext, getToken } = require('@adobe/aio-lib-ims');
 
 const BOT_NAME = 'aem-experimentation-aep-sync';
 
+const SEGMENT_PROPERTIES = ['id', 'name', 'description'];
+
+const AEP_SEGMENTS_API_ENDPOINT = 'https://platform.adobe.io/data/core/ups/segment/definitions';
+
+const SEGMENTS_PATH_IN_REPO = '/segments.json';
+
 const client = new http.HttpClient(BOT_NAME);
 
 /**
@@ -37,98 +43,6 @@ function getActionContext() {
 }
 
 /**
- * Get the manifest path for the page that triggered the action.
- * @param {object} context The action context object
- * @param {string} context.pagePath The path to the current page
- * @param {string} root The root path in the repo that contains the manifests
- * @returns a string representing the path to the manifest in the Git repo
- */
-function getManifestPathInRepo(context, root) {
-  const manifestPath = `${root.replace(/^\//, '')}${`${context.pagePath.replace(/\.md$/, '')}`}.manifest.json`;
-  console.debug('Manifest path:', manifestPath);
-  return manifestPath;
-}
-
-/**
- * Get the experiment id from the current live page if the page has it and also specified the
- * AEP engine for the experiment.
- * @param {object} context The action context object
- * @param {string} context.pagePath The path to the current page
- * @param {string} context.prodHost The production host
- * @returns the experiment id in the published page or null if missing
- */
-async function getExperimentIdFromDocument(context) {
-  const pathname = context.pagePath.replace(/index.md$/, '').replace(/\.md$/, '');
-  const url = `${context.prodHost}${pathname}`;
-  const response = await client.get(url);
-
-  // If the page does not exist, we return null
-  if (response.message.statusCode === 404) {
-    return null;
-  }
-
-  const htmlString = await response.readBody();
-  const dom = new JSDOM(htmlString);
-
-  // If the experiment is not using the AEP engine, we return null
-  const engine = dom.window.document.querySelector('head>meta[name="experiment-engine"]')?.content.toLowerCase().trim();
-  if (engine !== 'aep') {
-    return null;
-  }
-
-  // Return the experiment id from the metadata
-  const experimentId = dom.window.document.querySelector('head>meta[name="experiment"]')?.content.trim();
-  console.debug('Experiment id:', experimentId);
-  return experimentId;
-}
-
-/**
- * Get the existing manifest if it exists in the repo
- * @param {object} context The action context object
- * @param {string} context.owner The owner/org for the git repo
- * @param {string} context.repo The git repo name
- * @param {string} context.ref The branch for the git repo
- * @param {object} context.octokit A reference to the octokit client
- * @param {string} manifestPath The path to the manifest in the git repo 
- * @returns an object representing the manifest, or null if it does not exist in the git repo
- */
-async function getExistingManifestFromRepo(context, manifestPath) {
-  const { owner, repo, ref, octokit } = context;
-  try {
-    const result = await octokit.rest.repos.getContent({owner, repo, ref, path: manifestPath });
-    return result.data;
-  } catch (err) {
-    return null;
-  }
-}
-
-/**
- * Delete the specified manifest from the git repo
- * @param {object} context The action context object
- * @param {string} context.owner The owner/org for the git repo
- * @param {string} context.repo The git repo name
- * @param {string} context.ref The branch for the git repo
- * @param {object} context.octokit A reference to the octokit client
- * @param {object} manifest An object representing the manifest to be deleted
- * @param {string} manifest.path The path to the manifest in the git repo
- * @param {string} manifest.sha The SHA hash for the manifest in the git repo
- * @param {string} experimentId The id for the experiment
- * @returns a promise that the file was deleted from the repo
- */
-async function deleteManifestFromRepo(context, manifest, experimentId) {
-  const { owner, repo, ref, octokit } = context;
-  console.debug('Deleting stray manifest for experiment:', experimentId);
-  return octokit.rest.repos.deleteFile({
-    owner,
-    repo,
-    branch: ref,
-    path: manifest.path,
-    sha: manifest.sha,
-    message: `chore: delete manifest for removed AEP experiment ${experimentId}`,
-  });
-}
-
-/**
  * Gets a valid access token from IMS so we can connect to the desired Adobe backend.
  * @param {object} context The action context object
  * @param {string} context.clientId The client id from the developer console
@@ -150,73 +64,60 @@ async function getImsAccessToken(context) {
   return getToken(BOT_NAME);;
 }
 
-/**
- * Gets the experiment config from AEP
- * @param {object} context The action context object
- * @param {string} context.imsOrgId The IMS Org Id from the developer console
- * @param {*} experimentId The experiment id in AEP
- * @param {*} accessToken A valid access token to connect to AEP
- * @returns a json object representing the experiment config in AEP, or null if it does not exist
- */
-async function getExperimentConfigFromAep(context, experimentId, accessToken) {
-  const response = await client.get(
-    `https://platform.adobe.io/data/core/experimentation/experiments/${experimentId}`,
+async function getSegmentsFromAEP(context, accessToken) {
+  const response = await client.get(AEP_SEGMENTS_API_ENDPOINT,
     {
-      'Accept': 'application/vnd.adobe.experimentation.v1+json',
       'Authorization': `Bearer ${accessToken}`,
-      'x-api-key': 'experimentation-internal',
+      'x-api-key': 'acp_ui_platform',
       'x-gw-ims-org-id': context.imsOrgId,
       'x-sandbox-name': 'prod',
     }
   );
   if (response.message.statusCode >= 400) {
-    console.error('Invalid experiment id', experimentId);
+    console.error('Invalid configuration');
     return null;
   }
-  return response.readBody().then(JSON.parse);
+  const extractedSegments = [];
+  const segments = response.readBody().then(JSON.parse);
+  segments.forEach((segment) => {
+    const extractedSegment = {};
+    SEGMENT_PROPERTIES.forEach((property) => {
+      if (segment[property]) {
+        extractedSegment[property] = segment[property];
+      }
+    });
+    if (Object.keys(extractedSegment).length > 0) {
+      extractedSegments.push(extractedSegment);
+    }
+  });
+  return extractedSegments;
 }
 
-/**
- * Converts the AEP experiment config to a standard manifest format.
- * @param {object} config The AEP experiment to convert
- * @returns a json object representing the standard manifest format
- */
-async function convertExperimentConfigToManifest(config) {
-  return config;
-}
-
-/**
- * Adds the manifest to the git repo, or updates the existing one for taht page.
- * @param {object} context The action context object
- * @param {string} context.owner The owner/org for the git repo
- * @param {string} context.repo The git repo name
- * @param {string} context.ref The branch for the git repo
- * @param {object} context.octokit A reference to the octokit client
- * @param {string} manifestPath The path to the manifest in the git repo 
- * @param {string} sha The SHA hash for the manifest in the git repo
- * @param {object} manifest The manifest to write to the git repo
- * @returns a promise that the manifest was written to the git repo
- */
-async function addOrUpdateManifestInRepo(context, manifestPath, sha, manifest) {
+async function addOrUpdateSegmentsInRepo(context, segments) {
   const { owner, repo, ref, octokit } = context;
-  await mkdir(dirname(manifestPath), { recursive: true });
-  await writeFile(manifestPath, JSON.stringify(manifest));
+  const segmentsContent = JSON.stringify(segments);
 
-  if (sha) {
-    console.debug('Updating manifest for experiment:', manifest.id);
-  } else {
-    console.debug('Creating manifest for experiment:', manifest.id);
+  // read the /segments.json file from git repo
+  let oldSegmentsContent;
+  try {
+    const result = await octokit.rest.repos.getContent({owner, repo, ref, path: segmentsPath });
+    oldSegmentsContent = result.data;
+  } catch (err) {
+    oldSegmentsContent = null;
   }
 
-  const content = Base64.encode(JSON.stringify(manifest));
+  if (oldSegmentsContent && oldSegmentsContent === segmentsContent) {
+    console.debug('Segments are not changed');
+    return;
+  }
+
   return octokit.rest.repos.createOrUpdateFileContents({
     owner,
     repo,
     branch: ref,
-    path: manifestPath,
-    message: `chore: update AEP experiment manifest cache for ${manifest.id}`,
-    content,
-    sha: sha || undefined,
+    path: SEGMENTS_PATH_IN_REPO,
+    message: `chore: update AEP segments cache`,
+    segmentsContent,
   });
 }
 
@@ -229,32 +130,12 @@ async function run() {
     const context = getActionContext();
     context.octokit = github.getOctokit(context.gitToken);
 
-    const manifestPath = getManifestPathInRepo(context, 'experiments');
-    const experimentId = await getExperimentIdFromDocument(context);
-    const oldManifest = await getExistingManifestFromRepo(context, manifestPath);
-
-    // Clean up stray manifests if the page was unpublished or the metadata removed
-    if (!experimentId && manifestSha) {
-      await deleteManifestFromRepo(context, oldManifest, experimentId);
-      return;
-    }
-
     // Fetch the AEP manifest
     const accessToken = await getImsAccessToken(context);
-    const config = await getExperimentConfigFromAep(context, experimentId, accessToken);
-    if (!config) {
-      return;
-    }
-
-    // Check if the manifest has changed
-    const manifest = await convertExperimentConfigToManifest(config);
-    if (oldManifest.content.replace(/\n/g, '') === Base64.encode(JSON.stringify(manifest))) {
-      console.debug('Manifest is already up-to-date');
-      return;
-    }
-
-    // Persist the new manifest in the git repo
-    await addOrUpdateManifestInRepo(context, manifestPath, oldManifest.sha, manifest);
+    // get segments from AEP
+    const segments = await getSegmentsFromAEP(context, accessToken);
+    // persiste the segments in the git repo
+    await addOrUpdateSegmentsInRepo(context, segments);
   } catch (err) {
     core.setFailed(err.message);
   }
