@@ -72,7 +72,7 @@ async function getSegmentsFromAEP(context, accessToken) {
     }
   );
   if (response.message.statusCode >= 400) {
-    console.error('Invalid configuration');
+    console.error('Error response from AEP. Invalid configuration ', response.message.statusMessage);
     return null;
   }
   const extractedSegments = [];
