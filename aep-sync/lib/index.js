@@ -37,8 +37,6 @@ function getActionContext() {
     owner,
     repo,
     ref,
-    pagePath: core.getInput('resource_path', { required: true }),
-    prodHost: core.getInput('prod_host') || `https://${ref}--${repo}--${owner}.hlx.live`,
   };
 }
 
