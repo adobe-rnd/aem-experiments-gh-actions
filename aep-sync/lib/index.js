@@ -76,7 +76,7 @@ async function getSegmentsFromAEP(context, accessToken) {
     return null;
   }
   const extractedSegments = [];
-  const segmentsJson = response.readBody().then(JSON.parse);
+  const segmentsJson = await response.readBody().then(JSON.parse);
   console.info('Segments from AEP', segmentsJson);
   const segments = segmentsJson.segments ? segmentsJson.segments : [];
   segments.forEach((segment) => {
