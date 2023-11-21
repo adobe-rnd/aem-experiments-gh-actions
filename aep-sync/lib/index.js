@@ -66,7 +66,7 @@ async function getSegmentsFromAEP(context, accessToken) {
   const response = await client.get(AEP_SEGMENTS_API_ENDPOINT,
     {
       'Authorization': `Bearer ${accessToken}`,
-      'x-api-key': 'acp_ui_platform',
+      'x-api-key': context.clientId,
       'x-gw-ims-org-id': context.imsOrgId,
       'x-sandbox-name': 'prod',
     }
