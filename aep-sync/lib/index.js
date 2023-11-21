@@ -57,9 +57,9 @@ async function getImsAccessToken(context) {
     technical_account_email: context.technicalAccountEmail,
     technical_account_id: context.technicalAccountId,
     ims_org_id: context.imsOrgId,
-    scopes: ['openid', 'AdobeID', 'additional_info.projectedProductContext', 'session'],
+    scopes: ['openid', 'AdobeID', 'read_organizations', 'additional_info.projectedProductContext', 'session'],
   });
-  return getToken(BOT_NAME);;
+  return getToken(BOT_NAME);
 }
 
 async function getSegmentsFromAEP(context, accessToken) {
