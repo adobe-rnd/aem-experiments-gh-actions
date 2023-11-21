@@ -13,7 +13,7 @@ const SEGMENT_PROPERTIES = ['id', 'name', 'description'];
 
 const AEP_SEGMENTS_API_ENDPOINT = 'https://platform.adobe.io/data/core/ups/segment/definitions';
 
-const SEGMENTS_PATH_IN_REPO = '/segments.json';
+const SEGMENTS_PATH_IN_REPO = 'segments.json';
 
 const client = new http.HttpClient(BOT_NAME);
 
@@ -90,6 +90,7 @@ async function getSegmentsFromAEP(context, accessToken) {
       extractedSegments.push(extractedSegment);
     }
   });
+  console.info('Extracted segments', JSON.stringify(extractedSegments));
   return extractedSegments;
 }
 
@@ -105,6 +106,7 @@ async function addOrUpdateSegmentsInRepo(context, segments) {
   } catch (err) {
     oldSegmentsContent = null;
   }
+  console.info('Old segments content', oldSegmentsContent);
 
   if (oldSegmentsContent && oldSegmentsContent === segmentsContent) {
     console.debug('Segments are not changed');
