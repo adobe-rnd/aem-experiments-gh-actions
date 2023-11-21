@@ -10,6 +10,8 @@ This action is to be used inside a Github workflow.
 on: 
   repository_dispatch:
     types:
+      - resource-previewed
+      - resource-unpreviewed
       - resource-published
       - resource-unpublished
 

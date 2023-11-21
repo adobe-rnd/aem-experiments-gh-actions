@@ -79,7 +79,7 @@ async function getExperimentIdFromDocument(context) {
   // Return the experiment id from the metadata
   const experimentId = dom.window.document.querySelector('head>meta[name="experiment"]')?.content.trim();
   console.debug('Experiment id:', experimentId);
-  return experimentId;
+  return experimentId || '';
 }
 
 /**
@@ -148,9 +148,10 @@ async function getImsAccessToken(context) {
     scopes: ['openid', 'AdobeID', 'additional_info.projectedProductContext', 'session', 'aep.core.experimentation'],
   });
   try {
-    return getToken(BOT_NAME);
+    const token = await getToken(BOT_NAME);
+    return token;
   } catch (err) {
-    console.error('Invalid IMS credentials', context.clientId, await response.readBody());
+    console.error('Invalid IMS credentials', context.clientId, err.message);
   }
 }
 
@@ -236,6 +237,9 @@ async function run() {
     const manifestPath = getManifestPathInRepo(context, 'experiments');
     const oldManifest = await getExistingManifestFromRepo(context, manifestPath);
     const experimentId = await getExperimentIdFromDocument(context);
+    if (experimentId === null) {
+      return;
+    }
 
     // Clean up stray manifests if the page was unpublished or the metadata removed
     if (!experimentId && oldManifest?.sha) {
