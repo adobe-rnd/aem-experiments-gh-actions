@@ -145,9 +145,13 @@ async function getImsAccessToken(context) {
     technical_account_email: context.technicalAccountEmail,
     technical_account_id: context.technicalAccountId,
     ims_org_id: context.imsOrgId,
-    scopes: ['openid', 'AdobeID', 'additional_info.projectedProductContext', 'session'],
+    scopes: ['openid', 'AdobeID', 'additional_info.projectedProductContext', 'session', 'aep.core.experimentation'],
   });
-  return getToken(BOT_NAME);;
+  try {
+    return getToken(BOT_NAME);
+  } catch (err) {
+    console.error('Invalid IMS credentials', context.clientId, await response.readBody());
+  }
 }
 
 /**
@@ -164,13 +168,13 @@ async function getExperimentConfigFromAep(context, experimentId, accessToken) {
     {
       'Accept': 'application/vnd.adobe.experimentation.v1+json',
       'Authorization': `Bearer ${accessToken}`,
-      'x-api-key': 'experimentation-internal',
+      'x-api-key': 'aem-franklin',
       'x-gw-ims-org-id': context.imsOrgId,
       'x-sandbox-name': 'prod',
     }
   );
   if (response.message.statusCode >= 400) {
-    console.error('Invalid experiment id', experimentId);
+    console.error('Error fetching AEP experiment config', experimentId, await response.readBody());
     return null;
   }
   return response.readBody().then(JSON.parse);
@@ -230,17 +234,22 @@ async function run() {
     context.octokit = github.getOctokit(context.gitToken);
 
     const manifestPath = getManifestPathInRepo(context, 'experiments');
-    const experimentId = await getExperimentIdFromDocument(context);
     const oldManifest = await getExistingManifestFromRepo(context, manifestPath);
+    const experimentId = await getExperimentIdFromDocument(context);
 
     // Clean up stray manifests if the page was unpublished or the metadata removed
-    if (!experimentId && manifestSha) {
+    if (!experimentId && oldManifest?.sha) {
       await deleteManifestFromRepo(context, oldManifest, experimentId);
       return;
     }
 
-    // Fetch the AEP manifest
+    // Get the IMS access token
     const accessToken = await getImsAccessToken(context);
+    if (!accessToken) {
+      return;
+    }
+
+    // Fetch the AEP manifest
     const config = await getExperimentConfigFromAep(context, experimentId, accessToken);
     if (!config) {
       return;
@@ -248,13 +257,13 @@ async function run() {
 
     // Check if the manifest has changed
     const manifest = await convertExperimentConfigToManifest(config);
-    if (oldManifest.content.replace(/\n/g, '') === Base64.encode(JSON.stringify(manifest))) {
+    if (oldManifest?.content.replace(/\n/g, '') === Base64.encode(JSON.stringify(manifest))) {
       console.debug('Manifest is already up-to-date');
       return;
     }
 
     // Persist the new manifest in the git repo
-    await addOrUpdateManifestInRepo(context, manifestPath, oldManifest.sha, manifest);
+    await addOrUpdateManifestInRepo(context, manifestPath, oldManifest?.sha, manifest);
   } catch (err) {
     core.setFailed(err.message);
   }
