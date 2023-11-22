@@ -96,7 +96,7 @@ async function getSegmentsFromAEP(context, accessToken) {
 
 async function addOrUpdateSegmentsInRepo(context, segments) {
   const { owner, repo, ref, octokit } = context;
-  const segmentsContent = JSON.stringify(segments);
+  const segmentsContent = Base64.encode(JSON.stringify(segments));
 
   // read the /segments.json file from git repo
   let oldSegmentsContent;
@@ -108,8 +108,8 @@ async function addOrUpdateSegmentsInRepo(context, segments) {
   }
   console.info('Old segments content', oldSegmentsContent);
 
-  if (oldSegmentsContent && oldSegmentsContent === segmentsContent) {
-    console.debug('Segments are not changed');
+  if (oldSegmentsContent && oldSegmentsContent.replace(/\n/g, '') === segmentsContent) {
+    console.debug('Segments are already upto date');
     return;
   }
 
