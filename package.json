@@ -16,5 +16,9 @@
     "nx": "17.1.2",
     "prettier": "3.1.0"
   },
-  "workspaces": ["segments-sync"]
+  "workspaces": [
+    "aep-sync",
+    "target-sync",
+    "segments-sync"
+  ]
 }

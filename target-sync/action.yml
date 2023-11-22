@@ -1,0 +1,40 @@
+name: 'AEM Experiment Target Sync'
+description: 'Sync Target experiments with AEM EDS'
+inputs:
+  aio_console_client_id:
+    description: The client id from the credentials for your project in the developer console
+    required: true
+  aio_console_client_secret:
+    description: The client secret from the credentials for your project in the developer console
+    required: true
+  aio_console_ims_org_id:
+    description: The ims org id from the credentials for your project in the developer console
+    required: true
+  aio_console_technical_account_email:
+    description: The technical account email from the credentials for your project in the developer console
+    required: true
+  aio_console_technical_account_id:
+    description: The technical account id from the credentials for your project in the developer console
+    required: true
+  resource_path:
+    description: The resource path for the page that contains the experimentation details
+    required: true
+  git_pat_token:
+    description: The PAT token to be used to write the manifest to the git repo
+    required: true
+  git_repo:
+    description: The owner/repo to push the manifest to
+    required: true
+  git_ref:
+    description: The branch to push the manifest to
+    required: false
+    default: 'main'
+  target_tenant:
+    description: The tenant name in Target
+    required: true
+  prod_host:
+    description: The production host to use, or falls back to the owner/repo/ref that triggered the action
+    required: false
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
