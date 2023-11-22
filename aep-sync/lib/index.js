@@ -4,13 +4,15 @@ const github = require('@actions/github');
 const http = require('@actions/http-client');
 const { context: imsContext, getToken } = require('@adobe/aio-lib-ims');
 
-const BOT_NAME = 'aem-experimentation-aep-sync';
+const BOT_NAME = 'aem-experimentation-segments-sync';
 
 const SEGMENT_PROPERTIES = ['id', 'name', 'description'];
 
-const AEP_SEGMENTS_API_ENDPOINT = 'https://platform.adobe.io/data/core/ups/segment/definitions';
+const DEFAULT_SEGMENTS_API_ENDPOINT = 'https://platform.adobe.io/data/core/ups/segment/definitions';
 
-const SEGMENTS_PATH_IN_REPO = 'segments.json';
+const DEFAULT_SEGMENTS_PATH_IN_REPO = 'segments.json';
+
+const DEFAULT_SANDBOX_NAME = 'prod';
 
 const client = new http.HttpClient(BOT_NAME);
 
@@ -22,6 +24,10 @@ function getActionContext() {
   const git_repo = core.getInput('git_repo', { required: true });
   const [owner, repo] = git_repo.split('/');
   const ref = core.getInput('git_ref');
+  const segmentsPathInRepo = core.getInput('segments_path') || DEFAULT_SEGMENTS_PATH_IN_REPO;
+  const segmentsApiEndpoint = core.getInput('segments_api_endpoint') || DEFAULT_SEGMENTS_API_ENDPOINT;
+  const sandboxName = core.getInput('sandbox_name') || DEFAULT_SANDBOX_NAME;
+
   return {
     // Secrets
     clientId: core.getInput('aio_console_client_id', { required: true }),
@@ -31,6 +37,9 @@ function getActionContext() {
     technicalAccountId: core.getInput('aio_console_technical_account_id', { required: true }),
     gitToken: core.getInput('git_pat_token', { required: true }),
     // Variables
+    segmentsPathInRepo,
+    segmentsApiEndpoint,
+    sandboxName,
     owner,
     repo,
     ref,
@@ -60,12 +69,12 @@ async function getImsAccessToken(context) {
 }
 
 async function getSegmentsFromAEP(context, accessToken) {
-  const response = await client.get(AEP_SEGMENTS_API_ENDPOINT,
+  const response = await client.get(context.segmentsApiEndpoint,
     {
       'Authorization': `Bearer ${accessToken}`,
       'x-api-key': context.clientId,
       'x-gw-ims-org-id': context.imsOrgId,
-      'x-sandbox-name': 'prod',
+      'x-sandbox-name': context.sandboxName,
     }
   );
   if (response.message.statusCode >= 400) {
@@ -86,7 +95,6 @@ async function getSegmentsFromAEP(context, accessToken) {
       extractedSegments.push(extractedSegment);
     }
   });
-  console.info('Extracted segments', JSON.stringify(extractedSegments));
   return extractedSegments;
 }
 
@@ -97,16 +105,14 @@ async function addOrUpdateSegmentsInRepo(context, segments) {
   // read the /segments.json file from git repo
   let oldSegmentsContent;
   try {
-    const result = await octokit.rest.repos.getContent({owner, repo, ref, path: SEGMENTS_PATH_IN_REPO });
+    const result = await octokit.rest.repos.getContent({owner, repo, ref, path: DEFAULT_SEGMENTS_PATH_IN_REPO });
     oldSegmentsContent = result.data;
   } catch (err) {
     oldSegmentsContent = null;
   }
-  console.info('Old segments content', oldSegmentsContent);
-  console.info('New segments content', content);
 
-  if (oldSegmentsContent && oldSegmentsContent.replace(/\n/g, '') === content) {
-    console.debug('Segments are already upto date');
+  if (oldSegmentsContent && oldSegmentsContent.content.replace(/\n/g, '') === content) {
+    console.debug(`Segments at [${context.segmentsPathInRepo}] are already upto date`);
     return;
   }
 
@@ -114,8 +120,8 @@ async function addOrUpdateSegmentsInRepo(context, segments) {
     owner,
     repo,
     branch: ref,
-    path: SEGMENTS_PATH_IN_REPO,
-    message: `chore: update AEP segments cache`,
+    path: context.segmentsPathInRepo,
+    message: `chore: update AEP segments cache at ${context.segmentsPathInRepo}`,
     content,
   });
 }
@@ -128,10 +134,8 @@ async function run() {
   try {
     const context = getActionContext();
     context.octokit = github.getOctokit(context.gitToken);
-
-    // Fetch the AEP manifest
+ 
     const accessToken = await getImsAccessToken(context);
-    // get segments from AEP
     const segments = await getSegmentsFromAEP(context, accessToken);
     // persiste the segments in the git repo
     await addOrUpdateSegmentsInRepo(context, segments);
