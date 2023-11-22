@@ -1,7 +1,4 @@
-const { mkdir, writeFile } = require('fs').promises;
 const { Base64 } = require('js-base64');
-const { JSDOM } = require('jsdom');
-const { dirname } = require('path');
 const core = require('@actions/core');
 const github = require('@actions/github');
 const http = require('@actions/http-client');
@@ -77,7 +74,6 @@ async function getSegmentsFromAEP(context, accessToken) {
   }
   const extractedSegments = [];
   const segmentsJson = await response.readBody().then(JSON.parse);
-  console.info('Segments from AEP', segmentsJson);
   const segments = segmentsJson.segments ? segmentsJson.segments : [];
   segments.forEach((segment) => {
     const extractedSegment = {};
@@ -101,12 +97,13 @@ async function addOrUpdateSegmentsInRepo(context, segments) {
   // read the /segments.json file from git repo
   let oldSegmentsContent;
   try {
-    const result = await octokit.rest.repos.getContent({owner, repo, ref, path: segmentsPath });
+    const result = await octokit.rest.repos.getContent({owner, repo, ref, path: SEGMENTS_PATH_IN_REPO });
     oldSegmentsContent = result.data;
   } catch (err) {
     oldSegmentsContent = null;
   }
   console.info('Old segments content', oldSegmentsContent);
+  console.info('New segments content', segmentsContent);
 
   if (oldSegmentsContent && oldSegmentsContent.replace(/\n/g, '') === segmentsContent) {
     console.debug('Segments are already upto date');
