@@ -92,7 +92,7 @@ async function getSegmentsFromAEP(context, accessToken) {
 
 async function addOrUpdateSegmentsInRepo(context, segments) {
   const { owner, repo, ref, octokit } = context;
-  const segmentsContent = Base64.encode(JSON.stringify(segments));
+  const content = Base64.encode(JSON.stringify(segments));
 
   // read the /segments.json file from git repo
   let oldSegmentsContent;
@@ -103,9 +103,9 @@ async function addOrUpdateSegmentsInRepo(context, segments) {
     oldSegmentsContent = null;
   }
   console.info('Old segments content', oldSegmentsContent);
-  console.info('New segments content', segmentsContent);
+  console.info('New segments content', content);
 
-  if (oldSegmentsContent && oldSegmentsContent.replace(/\n/g, '') === segmentsContent) {
+  if (oldSegmentsContent && oldSegmentsContent.replace(/\n/g, '') === content) {
     console.debug('Segments are already upto date');
     return;
   }
@@ -116,7 +116,7 @@ async function addOrUpdateSegmentsInRepo(context, segments) {
     branch: ref,
     path: SEGMENTS_PATH_IN_REPO,
     message: `chore: update AEP segments cache`,
-    segmentsContent,
+    content,
   });
 }
 
