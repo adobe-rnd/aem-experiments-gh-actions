@@ -101,11 +101,9 @@ async function getSegmentsFromAEP(context, accessToken) {
 async function addOrUpdateSegmentsInRepo(context, segments) {
   const { owner, repo, ref, octokit } = context;
   const content = Base64.encode(JSON.stringify(segments));
-
-  // read the /segments.json file from git repo
   let oldSegmentsContent;
   try {
-    const result = await octokit.rest.repos.getContent({owner, repo, ref, path: DEFAULT_SEGMENTS_PATH_IN_REPO });
+    const result = await octokit.rest.repos.getContent({owner, repo, ref, path: context.segmentsPathInRepo });
     oldSegmentsContent = result.data;
   } catch (err) {
     oldSegmentsContent = null;
