@@ -31,13 +31,16 @@ function getActionContext() {
  */
 async function run() {
   try {
+    core.info('action execution started');
     const context = getActionContext();
     const allChunks = await fetchBundles(context.domain, context.days);
+    core.info('all chunks size' + allChunks.length);
     const urlChunks = applyFilters(allChunks, {url: context.url});
     const eventFilters = {
       checkpoint: 'experiment',
     };
     const experimentChunks = applyFilters(urlChunks, {}, eventFilters);
+    core.info('experiment chunks size' + experimentChunks.length);
     const pageViews = sumPageviews(urlChunks);
     const experimentPageViews = sumPageviews(experimentChunks);
     const experimentClickedChunks = applyFilters(experimentChunks, {}, {checkpoint: 'click'});
