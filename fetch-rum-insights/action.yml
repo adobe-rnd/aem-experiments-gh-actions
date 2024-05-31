@@ -1,0 +1,19 @@
+name: 'Fetch RUM Insights for experiment'
+description: 'Fetch RUM insights for experiment'
+inputs:
+  domain:
+    description: The website domain to fetch the RUM insights from
+    required: true
+  url:
+    description: The url where the experiment is running
+    required: url
+  domain-key:
+    description: The domainKey for accessing the domain RUM data
+    required: true
+  days:
+    description: The number of days to get the data
+    required: false
+    default: 30
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
