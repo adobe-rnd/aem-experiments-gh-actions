@@ -1,4 +1,5 @@
 async function fetchBundles(domain, interval, domainKey) {
+  const HOURS = 24;
   const chunks = [];
   const today = new Date();
 
@@ -9,10 +10,11 @@ async function fetchBundles(domain, interval, domainKey) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    const url = `https://rum.fastly-aem.page/bundles/${domain}/${year}/${month}/${day}?domainkey=${domainKey}`;
-    const responseJson = await fetch(url)
-                            .then(response => response.json());
-    chunks.push(responseJson);
+    for (let hour = 0; hour < HOURS; hour++) {
+      const url = `https://rum.fastly-aem.page/bundles/${domain}/${year}/${month}/${day}/${hour}?domainkey=${domainKey}`;
+      const responseJson = await fetch(url).then(response => response.json());
+      chunks.push(responseJson);
+    }
   }
 
   return chunks.flatMap((chunk) => chunk.rumBundles);
