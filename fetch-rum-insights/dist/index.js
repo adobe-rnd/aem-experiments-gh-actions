@@ -27109,7 +27109,7 @@ async function run() {
         }
       }
     }
-    console.log(JSON.stringify(experimentInsights, null, 2));
+    core.info(JSON.stringify(experimentInsights, null, 2));
     return experimentInsights;
   } catch (err) {
     core.setFailed(err.message);
