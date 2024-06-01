@@ -29,8 +29,9 @@ async function fetchBundles(domain, interval) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    core.info(`sending fetch for ${date.toISOString()}`);
-    const responseJson = await fetch(`https://rum.fastly-aem.page/bundles/${domain}/${year}/${month}/${day}?domainkey=${domainKey}`)
+    const url = `https://rum.fastly-aem.page/bundles/${domain}/${year}/${month}/${day}?domainkey=${domainKey}`;
+    core.info(`fetching ${url}`);
+    const responseJson = await fetch(url)
                             .then(response => response.json());
     chunks.push(responseJson);
   }
