@@ -18,7 +18,7 @@ async function fetchDomainKey(domain) {
 async function fetchBundles(domain, interval) {
   const domainKey = await fetchDomainKey(domain)
 
-  const promises = [];
+  const chunks = [];
   const today = new Date();
   core.info(`Fetching ${interval} days of RUM data for ${domain}`);
 
@@ -30,11 +30,11 @@ async function fetchBundles(domain, interval) {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     core.info(`sending fetch for ${date.toISOString()}`);
-    promises.push(fetch(`https://rum.fastly-aem.page/bundles/${domain}/${year}/${month}/${day}?domainkey=${domainKey}`));
+    const responseJson = await fetch(`https://rum.fastly-aem.page/bundles/${domain}/${year}/${month}/${day}?domainkey=${domainKey}`)
+                            .then(response => response.json());
+    chunks.push(responseJson);
   }
 
-  const responses = await Promise.all(promises);
-  const chunks = await Promise.all(responses.map((response) => response.json()));
   core.info(`Fetched ${chunks.length} chunks`);
   return chunks.flatMap((chunk) => chunk.rumBundles);
 }
