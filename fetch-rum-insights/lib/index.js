@@ -56,12 +56,9 @@ function getOrCreateVariantObject(variants, variantName) {
  */
 async function run() {
   try {
-    core.info('action execution started');
     const context = getActionContext();
-    core.info('context: ' + JSON.stringify(context, null, 2));
     const experimentInsights = {};
     const allChunks = await fetchBundles(context.domain, context.days, context.domainKey);
-    core.info('fetched bundles ' + allChunks.length);
     const eventFilters = {
       checkpoint: 'experiment',
     };

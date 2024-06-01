@@ -26826,12 +26826,9 @@ var __webpack_exports__ = {};
 __nccwpck_require__.r(__webpack_exports__);
 
 ;// CONCATENATED MODULE: ./common/rum-bundler-client.js
-const core = __nccwpck_require__(2186);
-
 async function fetchBundles(domain, interval, domainKey) {
   const chunks = [];
   const today = new Date();
-  core.info(`Fetching ${interval} days of RUM data for ${domain}`);
 
   for (let i = 0; i < interval; i++) {
     const date = new Date(today);
@@ -26841,13 +26838,11 @@ async function fetchBundles(domain, interval, domainKey) {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     const url = `https://rum.fastly-aem.page/bundles/${domain}/${year}/${month}/${day}?domainkey=${domainKey}`;
-    core.info(`fetching ${url}`);
     const responseJson = await fetch(url)
                             .then(response => response.json());
     chunks.push(responseJson);
   }
 
-  core.info(`Fetched ${chunks.length} chunks`);
   return chunks.flatMap((chunk) => chunk.rumBundles);
 }
 
@@ -26997,7 +26992,7 @@ function applyFilters(chunks, chunkFilters, eventFilters) {
 
 
 ;// CONCATENATED MODULE: ./lib/index.js
-const lib_core = __nccwpck_require__(2186);
+const core = __nccwpck_require__(2186);
 
 
 
@@ -27007,13 +27002,13 @@ const lib_core = __nccwpck_require__(2186);
  * @returns a context object with references to the main variables
  */
 function getActionContext() {
-  const domain = lib_core.getInput('domain', { required: true });
-  const url = lib_core.getInput('url', { required: true });
-  const days = lib_core.getInput('days');
+  const domain = core.getInput('domain', { required: true });
+  const url = core.getInput('url', { required: true });
+  const days = core.getInput('days');
 
   return {
     // Secrets
-    domainKey: lib_core.getInput('domain-key', { required: true }),
+    domainKey: core.getInput('domain-key', { required: true }),
     // Variables
     domain,
     url,
@@ -27053,12 +27048,9 @@ function getOrCreateVariantObject(variants, variantName) {
  */
 async function run() {
   try {
-    lib_core.info('action execution started');
     const context = getActionContext();
-    lib_core.info('context: ' + JSON.stringify(context, null, 2));
     const experimentInsights = {};
     const allChunks = await fetchBundles(context.domain, context.days, context.domainKey);
-    lib_core.info('fetched bundles ' + allChunks.length);
     const eventFilters = {
       checkpoint: 'experiment',
     };
@@ -27098,10 +27090,10 @@ async function run() {
         }
       }
     }
-    lib_core.info(JSON.stringify(experimentInsights, null, 2));
+    core.info(JSON.stringify(experimentInsights, null, 2));
     return experimentInsights;
   } catch (err) {
-    lib_core.setFailed(err.message);
+    core.setFailed(err.message);
   }
 }
 
