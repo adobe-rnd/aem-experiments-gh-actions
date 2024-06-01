@@ -4,9 +4,6 @@ inputs:
   domain:
     description: The website domain to fetch the RUM insights from
     required: true
-  url:
-    description: The url where the experiment is running
-    required: url
   domain-key:
     description: The domainKey for accessing the domain RUM data
     required: true

@@ -21,6 +21,5 @@ jobs:
         with:
           domain-key: ${{ secrets.RUM_DOMAIN_KEY }}
           domain: 'www.maidenform.com'
-          url: 'https://www.maidenform.com/m'
           days: 30
 ```
