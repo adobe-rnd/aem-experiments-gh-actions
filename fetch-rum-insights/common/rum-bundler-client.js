@@ -1,3 +1,5 @@
+const core = require('@actions/core');
+
 async function fetchDomainKey(domain) {
   try {
     const auth = process.env.RUM_BUNDLER_TOKEN;
@@ -18,6 +20,7 @@ async function fetchBundles(domain, interval) {
 
   const promises = [];
   const today = new Date();
+  core.info(`Fetching ${interval} days of RUM data for ${domain}`);
 
   for (let i = 0; i < interval; i++) {
     const date = new Date(today);
@@ -26,12 +29,13 @@ async function fetchBundles(domain, interval) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-
+    core.info(`sending fetch for ${date.toISOString()}`);
     promises.push(fetch(`https://rum.fastly-aem.page/bundles/${domain}/${year}/${month}/${day}?domainkey=${domainKey}`));
   }
 
   const responses = await Promise.all(promises);
   const chunks = await Promise.all(responses.map((response) => response.json()));
+  core.info(`Fetched ${chunks.length} chunks`);
   return chunks.flatMap((chunk) => chunk.rumBundles);
 }
 

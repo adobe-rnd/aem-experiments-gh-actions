@@ -58,6 +58,7 @@ async function run() {
   try {
     core.info('action execution started');
     const context = getActionContext();
+    core.info('context: ' + JSON.stringify(context, null, 2));
     const experimentInsights = {};
     const allChunks = await fetchBundles(context.domain, context.days);
     core.info('fetched bundles ' + allChunks.length);

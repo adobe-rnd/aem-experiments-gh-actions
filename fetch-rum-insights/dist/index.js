@@ -26826,6 +26826,8 @@ var __webpack_exports__ = {};
 __nccwpck_require__.r(__webpack_exports__);
 
 ;// CONCATENATED MODULE: ./common/rum-bundler-client.js
+const core = __nccwpck_require__(2186);
+
 async function fetchDomainKey(domain) {
   try {
     const auth = process.env.RUM_BUNDLER_TOKEN;
@@ -26846,6 +26848,7 @@ async function fetchBundles(domain, interval) {
 
   const promises = [];
   const today = new Date();
+  core.info(`Fetching ${interval} days of RUM data for ${domain}`);
 
   for (let i = 0; i < interval; i++) {
     const date = new Date(today);
@@ -26854,12 +26857,13 @@ async function fetchBundles(domain, interval) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-
+    core.info(`sending fetch for ${date.toISOString()}`);
     promises.push(fetch(`https://rum.fastly-aem.page/bundles/${domain}/${year}/${month}/${day}?domainkey=${domainKey}`));
   }
 
   const responses = await Promise.all(promises);
   const chunks = await Promise.all(responses.map((response) => response.json()));
+  core.info(`Fetched ${chunks.length} chunks`);
   return chunks.flatMap((chunk) => chunk.rumBundles);
 }
 
@@ -27009,7 +27013,7 @@ function applyFilters(chunks, chunkFilters, eventFilters) {
 
 
 ;// CONCATENATED MODULE: ./lib/index.js
-const core = __nccwpck_require__(2186);
+const lib_core = __nccwpck_require__(2186);
 
 
 
@@ -27019,13 +27023,13 @@ const core = __nccwpck_require__(2186);
  * @returns a context object with references to the main variables
  */
 function getActionContext() {
-  const domain = core.getInput('domain', { required: true });
-  const url = core.getInput('url', { required: true });
-  const days = core.getInput('days');
+  const domain = lib_core.getInput('domain', { required: true });
+  const url = lib_core.getInput('url', { required: true });
+  const days = lib_core.getInput('days');
 
   return {
     // Secrets
-    domainKey: core.getInput('domain-key', { required: true }),
+    domainKey: lib_core.getInput('domain-key', { required: true }),
     // Variables
     domain,
     url,
@@ -27065,11 +27069,12 @@ function getOrCreateVariantObject(variants, variantName) {
  */
 async function run() {
   try {
-    core.info('action execution started');
+    lib_core.info('action execution started');
     const context = getActionContext();
+    lib_core.info('context: ' + JSON.stringify(context, null, 2));
     const experimentInsights = {};
     const allChunks = await fetchBundles(context.domain, context.days);
-    core.info('fetched bundles ' + allChunks.length);
+    lib_core.info('fetched bundles ' + allChunks.length);
     const eventFilters = {
       checkpoint: 'experiment',
     };
@@ -27109,10 +27114,10 @@ async function run() {
         }
       }
     }
-    core.info(JSON.stringify(experimentInsights, null, 2));
+    lib_core.info(JSON.stringify(experimentInsights, null, 2));
     return experimentInsights;
   } catch (err) {
-    core.setFailed(err.message);
+    lib_core.setFailed(err.message);
   }
 }
 
