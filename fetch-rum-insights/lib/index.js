@@ -60,7 +60,7 @@ async function run() {
     const context = getActionContext();
     core.info('context: ' + JSON.stringify(context, null, 2));
     const experimentInsights = {};
-    const allChunks = await fetchBundles(context.domain, context.days);
+    const allChunks = await fetchBundles(context.domain, context.days, context.domainKey);
     core.info('fetched bundles ' + allChunks.length);
     const eventFilters = {
       checkpoint: 'experiment',

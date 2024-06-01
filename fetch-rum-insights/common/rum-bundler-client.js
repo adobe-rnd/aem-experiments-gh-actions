@@ -1,23 +1,6 @@
 const core = require('@actions/core');
 
-async function fetchDomainKey(domain) {
-  try {
-    const auth = process.env.RUM_BUNDLER_TOKEN;
-    const resp = await fetch(`https://rum.fastly-aem.page/domainkey/${domain}`, {
-      headers: {
-        authorization: `Bearer ${auth}`,
-      },
-    });
-    const json = await resp.json();
-    return (json.domainkey);
-  } catch {
-    return '';
-  }
-}
-
-async function fetchBundles(domain, interval) {
-  const domainKey = await fetchDomainKey(domain)
-
+async function fetchBundles(domain, interval, domainKey) {
   const chunks = [];
   const today = new Date();
   core.info(`Fetching ${interval} days of RUM data for ${domain}`);

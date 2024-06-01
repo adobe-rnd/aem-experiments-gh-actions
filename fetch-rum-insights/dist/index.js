@@ -26828,24 +26828,7 @@ __nccwpck_require__.r(__webpack_exports__);
 ;// CONCATENATED MODULE: ./common/rum-bundler-client.js
 const core = __nccwpck_require__(2186);
 
-async function fetchDomainKey(domain) {
-  try {
-    const auth = process.env.RUM_BUNDLER_TOKEN;
-    const resp = await fetch(`https://rum.fastly-aem.page/domainkey/${domain}`, {
-      headers: {
-        authorization: `Bearer ${auth}`,
-      },
-    });
-    const json = await resp.json();
-    return (json.domainkey);
-  } catch {
-    return '';
-  }
-}
-
-async function fetchBundles(domain, interval) {
-  const domainKey = await fetchDomainKey(domain)
-
+async function fetchBundles(domain, interval, domainKey) {
   const chunks = [];
   const today = new Date();
   core.info(`Fetching ${interval} days of RUM data for ${domain}`);
@@ -27074,7 +27057,7 @@ async function run() {
     const context = getActionContext();
     lib_core.info('context: ' + JSON.stringify(context, null, 2));
     const experimentInsights = {};
-    const allChunks = await fetchBundles(context.domain, context.days);
+    const allChunks = await fetchBundles(context.domain, context.days, context.domainKey);
     lib_core.info('fetched bundles ' + allChunks.length);
     const eventFilters = {
       checkpoint: 'experiment',
