@@ -11,7 +11,6 @@ import {
  */
 function getActionContext() {
   const domain = core.getInput('domain', { required: true });
-  const url = core.getInput('url', { required: true });
   const days = core.getInput('days');
 
   return {
@@ -19,7 +18,6 @@ function getActionContext() {
     domainKey: core.getInput('domain-key', { required: true }),
     // Variables
     domain,
-    url,
     days,
   };
 }
