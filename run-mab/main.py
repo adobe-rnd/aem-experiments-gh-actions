@@ -16,12 +16,8 @@ if len(conversionName) == 0:
 # The conversion value
 conversionValue = sys.argv[3]
 
-print(conversionName, conversionValue, rumDataString)
-
 data = json.loads(rumDataString)
 
-print(data)
-
-for idx1, page in enumerate(data):
-  for idx2, experiment in enumerate(page):
-    print(idx1, idx2, experiment)
+for page in data:
+  for attribute, value in page.items():
+    print(attribute, value)
