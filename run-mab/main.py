@@ -1,17 +1,22 @@
 #!/usr/bin/env python
-
 # coding: utf-8
 
+import json
 import os
 import sys
 
-print(sys.argv[1:])
+# The RUM data
+rumDataString = sys.argv[1]
 
-for key, value in os.environ.items():
-    print('{}: {}'.format(key, value))
+# The conversion checkpoint to use
+conversionName = sys.argv[2]
+if len(conversionName) == 0
+  conversionName = 'convert'
 
-# TODO: add logic here
+# The conversion value
+conversionValue = sys.argv[3]
 
-# import json
-# data = json.loads('{"one" : "1", "two" : "2", "three" : "3"}')
-# print(data['two'])  # or `print data['two']` in Python 2
+data = json.loads(rumDataString)
+for idx1, page in enumerate(data):
+  for idx2, experiment in enumerate(page):
+    print(idx1, idx2, experiment)
