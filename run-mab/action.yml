@@ -15,4 +15,3 @@ outputs:
 runs:
   using: docker
   image: Dockerfile
-  entrypoint: main.py
