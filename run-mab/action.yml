@@ -1,0 +1,18 @@
+name: Run MAB algorithm
+description: Run the multi-arm bandit algorithm for experiments
+inputs:
+  rum-data:
+    description: A JSON object representing the RUM data organized by page and experiment
+    required: true
+  conversion-name:
+    description: The name for the checkpoint to use for the conversion
+    default: convert
+  conversion-value:
+    description: A specific value to use for the conversion checkpoint
+outputs:
+  config:
+    description: 'A JSON object representing the MAB config to run on the website for each page and experiment'
+runs:
+  using: docker
+  image: Dockerfile
+  entrypoint: main.sh
