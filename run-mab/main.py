@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import json
+import mab
 import os
 import sys
 
@@ -18,6 +19,8 @@ conversionValue = sys.argv[3]
 
 data = json.loads(rumDataString)
 
-for page in data:
-  for attribute, value in page.items():
-    print(attribute, value)
+for url in data:
+  page = data[url]
+  for experiment in page:
+    res = mab.main(experiment)
+    print(url, experiment['experiment'], res)
