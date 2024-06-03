@@ -1,0 +1,89 @@
+{
+    "https://www.maidenform.com/m":
+    [
+        {
+            "experiment":"Hero Copy and CTA Test",
+            "variants":
+            [
+                {
+                    "name":"challenger-2",
+                    "views":2250,
+                    "clicks":
+                    {
+                        ".html-snippet":10,
+                        "#lpclose":140,
+                        ".grid-overlay #get-a-taste-of-our-mcollection":10,
+                        ".grid-overlay":90,
+                        "#lpshroud":20,
+                        ".header":10
+                    },
+                    "conversions":
+                    {
+                        "shop-m-bodywear":70,
+                        "shop-m-bras":10,
+                        "shop-m-underwear":10
+                    }
+                },
+                {
+                    "name":"challenger-6",
+                    "views":2490,
+                    "clicks":
+                    {
+                        ".grid-overlay":150,
+                        "#lpshroud":10,
+                        "#lpclose":320,
+                        ".html-snippet":110,
+                        ".header":10,
+                        ".meet-m-quick-links":10
+                    },
+                    "conversions":
+                    {
+                        "shop-m-bodywear":130,
+                        "shop-m-bras":20
+                    }
+                },
+                {
+                    "name":"challenger-8",
+                    "views":730,
+                    "clicks":
+                    {
+                        ".grid-overlay":10,
+                        ".html-snippet":10
+                    },
+                    "conversions":
+                    {
+                        "shop-m-bodywear":10
+                    }
+                },
+                {
+                    "name":"challenger-4",
+                    "views":710,
+                    "clicks":
+                    {
+                        ".html-snippet":10,
+                        ".grid-overlay":120,
+                        ".footer-links":10,
+                        "#lpclose":10,
+                        ".footer-links #my-account":10,
+                        ".footer-links #footer-links-1":10
+                    },
+                    "conversions":
+                    {
+                        "shop-m-bodywear":20,
+                        "shop-m-bras":100
+                    }
+                },
+                {
+                    "name":"control",
+                    "views":130,
+                    "clicks":{
+
+                    },
+                    "conversions":{
+
+                    }
+                }
+            ]
+        }
+    ]
+}
