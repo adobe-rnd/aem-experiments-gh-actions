@@ -5,3 +5,4 @@ COPY main.sh /work/main.sh
 COPY main.py /work/main.py
 WORKDIR /work
 RUN pip install -r requirements.txt
+ENTRYPOINT ['main.sh']
