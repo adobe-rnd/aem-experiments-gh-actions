@@ -1,7 +1,7 @@
 def main(arg1):
     print('mab', arg1)
     result = {}
-    result.some = 'value'
+    result['some'] = 'value'
     return result
 
 if __name__ == '__main__':
