@@ -10,7 +10,7 @@ rumDataString = sys.argv[1]
 
 # The conversion checkpoint to use
 conversionName = sys.argv[2]
-if len(conversionName) == 0
+if len(conversionName) == 0:
   conversionName = 'convert'
 
 # The conversion value
