@@ -97,6 +97,7 @@ async function run() {
       }
     }
     core.info(JSON.stringify(experimentInsights, null, 2));
+    core.setOutput('data', JSON.stringify(experimentInsights));
     return experimentInsights;
   } catch (err) {
     core.setFailed(err.message);
