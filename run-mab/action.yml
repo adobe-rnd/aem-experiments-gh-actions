@@ -14,4 +14,5 @@ outputs:
     description: 'A JSON object representing the MAB config to run on the website for each page and experiment'
 runs:
   using: docker
-  image: ghcr.io/sudo-buddy/python_3.10.14_mab:latest
+  image: Dockerfile
+  entrypoint: /main.sh
