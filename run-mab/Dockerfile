@@ -5,4 +5,4 @@ COPY main.py /main.py
 COPY main.sh /main.sh
 
 # RUN pip install -r /requirements.txt
-ENTRYPOINT ["/main.sh", "$INPUT_RUM-DATA", "$INPUT_CONVERSION-NAME", "$INPUT_CONVERSION-VALUE"]
+ENTRYPOINT ["sh", "-c", "/main.sh", "$INPUT_RUM-DATA", "$INPUT_CONVERSION-NAME", "$INPUT_CONVERSION-VALUE"]
