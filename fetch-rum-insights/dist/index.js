@@ -27010,11 +27010,17 @@ function getActionContext() {
   };
 }
 
+function toClassName(name) {
+  return typeof name === 'string'
+    ? name.toLowerCase().replace(/[^0-9a-z]/gi, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
+    : '';
+}
+
 function getOrCreateExperimentObject(urlInsights, experimentName) {
-  let experimentObject = urlInsights.find(e => e.experiment === experimentName);
+  let experimentObject = urlInsights.find(e => e.experiment === toClassName(experimentName));
     if (!experimentObject) {
       experimentObject = {
-        experiment: experimentName,
+        experiment: toClassName(experimentName),
         variants: [],
       };
       urlInsights.push(experimentObject);
