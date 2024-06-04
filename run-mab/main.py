@@ -2,8 +2,14 @@
 # coding: utf-8
 
 import json
+import mab
 import os
 import sys
+
+def set_output(name, value):
+  with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+    print(f'{name}={value}', file=fh)
+
 
 # The RUM data
 rumDataString = sys.argv[1]
@@ -18,6 +24,12 @@ conversionValue = sys.argv[3]
 
 data = json.loads(rumDataString)
 
-for page in data:
-  for attribute, value in page.items():
-    print(attribute, value)
+mab_config = {}
+for url in data:
+  mab_config[url] = {}
+  page = data[url]
+  for experiment in page:
+    res = mab.main(experiment)
+    mab_config[url][experiment['experiment']] = res
+
+set_output('config', json.dumps(mab_config))
