@@ -32,4 +32,5 @@ for url in data:
     res = mab.main(experiment)
     mab_config[url][experiment['experiment']] = res
 
+print(mab_config)
 set_output('config', json.dumps(mab_config))
