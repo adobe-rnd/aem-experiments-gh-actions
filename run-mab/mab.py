@@ -1,4 +1,26 @@
 import sys
+import pandas as pd
+from mabwiser.mab import MAB, LearningPolicy
+
+def display_expectations_for_tau(arms, decisions, rewards, custom_tau=0.1, verbose=1):
+    _m = MAB(arms=arms, #[::-1], 
+                    learning_policy=LearningPolicy.Softmax(tau=custom_tau), # ThompsonSampling(), #
+                    seed=123456)
+    _m.fit(
+            decisions=decisions, 
+            rewards=rewards)            
+    
+    arm_to_expecations = [(arm, round(percent,4)) for arm, percent in _m._imp.arm_to_expectation.items()]
+    return dict(arm_to_expecations)
+
+# Compute CTR
+def compute_ctr(d, verbose=0):
+    total_clicks = sum(d['clicks'].values())
+    convert = sum(d['conversions'].values())
+    ctr = round( total_clicks / d['views'] if total_clicks > 0 else 0, 6)
+    convert_ctr = round(convert / d['views'] if convert > 0 else 0, 6)
+    row = {'variant_name' : d['name'], 'pageviews': d['views'], 'clicks': total_clicks, 'ctr': ctr, 'conversions': convert, 'conversion_rate': convert_ctr}
+    return pd.DataFrame([row])
 
 def main(rumData):
     print('RUM Data', rumData)
@@ -53,11 +75,17 @@ def main(rumData):
     #   'challenger-8': 7,
     #   'control': 10
     # }
-    result = {}
-    result['control'] = '34'
-    result['challenger-1'] = '33'
-    result['challenger-2'] = '33'
-    return result
+    df = pd.DataFrame(columns=['variant_name', 'pageviews', 'clicks', 'ctr', 'conversions', 'conversion_rate'])
+    for variant in rumData['variants']:
+        row = compute_ctr(variant)
+        df = pd.concat([df, row])
+
+    df = df.sort_values(by='variant_name')
+
+    arms = list(df["variant_name"])
+    rewards = list(df['conversion_rate'])
+
+    return display_expectations_for_tau(custom_tau=0.05, arms=arms, decisions=arms, rewards=rewards, verbose=0)
 
 if __name__ == '__main__':
     # test1.py executed as script
