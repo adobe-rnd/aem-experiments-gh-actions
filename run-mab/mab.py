@@ -1,3 +1,5 @@
+import sys
+
 def main(rumData):
     print('RUM Data', rumData)
     # Format is:
