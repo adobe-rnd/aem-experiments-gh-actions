@@ -18,6 +18,7 @@
   },
   "workspaces": [
     "aep-sync",
+    "run-mab",
     "target-sync",
     "segments-sync"
   ]
