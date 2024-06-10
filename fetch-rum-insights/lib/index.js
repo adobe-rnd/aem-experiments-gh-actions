@@ -30,13 +30,13 @@ function toClassName(name) {
 
 function getOrCreateExperimentObject(urlInsights, experimentName) {
   let experimentObject = urlInsights.find(e => e.experiment === toClassName(experimentName));
-    if (!experimentObject) {
-      experimentObject = {
-        experiment: toClassName(experimentName),
-        variants: [],
-      };
-      urlInsights.push(experimentObject);
-    }
+  if (!experimentObject) {
+    experimentObject = {
+      experiment: toClassName(experimentName),
+      variants: [],
+    };
+    urlInsights.push(experimentObject);
+  }
   return experimentObject;
 }
 
@@ -60,9 +60,10 @@ function getOrCreateVariantObject(variants, variantName) {
  */
 async function run() {
   try {
+    const CHECKPOINTS = ['top', 'enter', 'utm', 'leave', 'click', 'convert', 'experiment'];
     const context = getActionContext();
     const experimentInsights = {};
-    const allChunks = await fetchBundles(context.domain, context.days, context.domainKey);
+    const allChunks = await fetchBundles(context.domain, context.days, context.domainKey, CHECKPOINTS);
     const eventFilters = {
       checkpoint: 'experiment',
     };
@@ -85,7 +86,7 @@ async function run() {
       variantObject.views += views;
 
       for (const event of chunk.events) {
-        if (event.checkpoint === 'click' ) {
+        if (event.checkpoint === 'click') {
           const clickSource = event.source;
           if (!variantObject.clicks[clickSource]) {
             variantObject.clicks[clickSource] = views;
