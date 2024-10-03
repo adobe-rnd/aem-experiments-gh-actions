@@ -63,15 +63,15 @@ function getOrCreateVariantObject(variants, variantName) {
  */
 async function run() {
   try {
-    console.log('Fetching RUM insights...');
+    core.info('Fetching RUM insights...');
     const context = getActionContext();
-    console.log(context);
+    core.info(context);
     const experimentInsights = {};
     // const allChunks = await fetchBundles(context.domain, context.days, context.domainKey);
     // const fs = require('fs');
     const fileContent = fs.readFileSync('./xwalk-test.json', 'utf8');
     const allChunks = JSON.parse(fileContent);
-    console.log(allChunks);
+    core.info(allChunks);
     const eventFilters = {
       checkpoint: 'experiment',
     };
