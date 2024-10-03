@@ -66,7 +66,7 @@ async function run() {
     const context = getActionContext();
     const experimentInsights = {};
     // const allChunks = await fetchBundles(context.domain, context.days, context.domainKey);
-    const fs = require('fs');
+    // const fs = require('fs');
     const fileContent = fs.readFileSync('fetch-rum-insights/lib/xwalk-test.json', 'utf8');
     const allChunks = JSON.parse(fileContent);
     const eventFilters = {
