@@ -26996,6 +26996,8 @@ function applyFilters(chunks, chunkFilters, eventFilters) {
 // EXTERNAL MODULE: external "fs"
 var external_fs_ = __nccwpck_require__(7147);
 var external_fs_default = /*#__PURE__*/__nccwpck_require__.n(external_fs_);
+// EXTERNAL MODULE: external "path"
+var external_path_ = __nccwpck_require__(1017);
 ;// CONCATENATED MODULE: ./lib/index.js
 const core = __nccwpck_require__(2186);
 
@@ -27066,7 +27068,9 @@ async function run() {
     const experimentInsights = {};
     // const allChunks = await fetchBundles(context.domain, context.days, context.domainKey);
     // const fs = require('fs');
-    const fileContent = external_fs_default().readFileSync('./xwalk-test.json', 'utf8');
+    // const path = require('path');
+    const filePath = __nccwpck_require__.ab + "xwalk-test.json";
+    const fileContent = external_fs_default().readFileSync(__nccwpck_require__.ab + "xwalk-test.json", 'utf8');
     const allChunks = JSON.parse(fileContent);
     core.info(allChunks);
     const eventFilters = {
