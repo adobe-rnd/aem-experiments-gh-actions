@@ -71,9 +71,9 @@ async function run() {
     // const fs = require('fs');
     // const path = require('path');
     const filePath = path.join(__dirname, 'xwalk-test.json');
-    console.log(filePath);
+    core.info(filePath);
     const fileContent = fs.readFileSync(filePath, 'utf8');
-    console.log(fileContent);
+    core.info(fileContent);
     const allChunks = JSON.parse(fileContent);
     core.info(allChunks);
     const eventFilters = {
