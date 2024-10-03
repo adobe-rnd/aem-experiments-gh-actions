@@ -68,14 +68,8 @@ async function run() {
     core.info(context);
     const experimentInsights = {};
     // const allChunks = await fetchBundles(context.domain, context.days, context.domainKey);
-    // const fs = require('fs');
-    // const path = require('path');
-    const filePath = path.join(__dirname, 'xwalk-test.json');
-    core.info(filePath);
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    core.info(fileContent);
+    const fileContent = fs.readFileSync('./xwalk-test.json', 'utf8');
     const allChunks = JSON.parse(fileContent);
-    core.info(allChunks);
     const eventFilters = {
       checkpoint: 'experiment',
     };
