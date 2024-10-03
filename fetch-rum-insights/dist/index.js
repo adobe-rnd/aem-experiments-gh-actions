@@ -26802,6 +26802,35 @@ module.exports = parseParams
 /******/ 	}
 /******/ 	
 /************************************************************************/
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	(() => {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__nccwpck_require__.n = (module) => {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				() => (module['default']) :
+/******/ 				() => (module);
+/******/ 			__nccwpck_require__.d(getter, { a: getter });
+/******/ 			return getter;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__nccwpck_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
 /******/ 		// define __esModule on exports
@@ -26824,35 +26853,6 @@ var __webpack_exports__ = {};
 "use strict";
 // ESM COMPAT FLAG
 __nccwpck_require__.r(__webpack_exports__);
-
-;// CONCATENATED MODULE: ./common/rum-bundler-client.js
-async function fetchBundles(domain, interval, domainKey) {
-  const HOURS = 24;
-  const chunks = [];
-  const today = new Date();
-
-  for (let i = 0; i < interval; i++) {
-    const date = new Date(today);
-    date.setDate(today.getDate() - i);
-
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    for (let hour = 0; hour < HOURS; hour++) {
-      const url = `https://rum.fastly-aem.page/bundles/${domain}/${year}/${month}/${day}/${hour}?domainkey=${domainKey}`;
-      const responseJson = await fetch(url).then(response => response.json());
-      chunks.push(responseJson);
-    }
-  }
-
-  return chunks.flatMap((chunk) => chunk.rumBundles);
-}
-
-async function fetchLastMonth(domain) {
-  return fetchBundles(domain,31);
-}
-
-
 
 ;// CONCATENATED MODULE: ./common/aggregations.js
 function calculateSessionDurationP50(chunks) {
@@ -26993,8 +26993,14 @@ function applyFilters(chunks, chunkFilters, eventFilters) {
 
 
 
+// EXTERNAL MODULE: external "fs"
+var external_fs_ = __nccwpck_require__(7147);
+var external_fs_default = /*#__PURE__*/__nccwpck_require__.n(external_fs_);
 ;// CONCATENATED MODULE: ./lib/index.js
 const core = __nccwpck_require__(2186);
+
+
+
 
 
 
@@ -27054,9 +27060,15 @@ function getOrCreateVariantObject(variants, variantName) {
  */
 async function run() {
   try {
+    core.info('Fetching RUM insights...');
     const context = getActionContext();
+    core.info(context);
     const experimentInsights = {};
-    const allChunks = await fetchBundles(context.domain, context.days, context.domainKey);
+    // const allChunks = await fetchBundles(context.domain, context.days, context.domainKey);
+    // const fs = require('fs');
+    const fileContent = external_fs_default().readFileSync('./xwalk-test.json', 'utf8');
+    const allChunks = JSON.parse(fileContent);
+    core.info(allChunks);
     const eventFilters = {
       checkpoint: 'experiment',
     };
