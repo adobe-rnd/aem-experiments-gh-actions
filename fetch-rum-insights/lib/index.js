@@ -5,6 +5,7 @@ import {
 } from '../common/aggregations.js';
 import fs from 'fs';
 import path from 'path';
+import rumData from './xwalk-test.json' assert { type: "json" };
 
 
 
@@ -68,9 +69,9 @@ async function run() {
     core.info(context);
     const experimentInsights = {};
     // const allChunks = await fetchBundles(context.domain, context.days, context.domainKey);
-    const fileContent = fs.readFileSync('./xwalk-test.json', 'utf8');
-    core.info(fileContent);
-    const allChunks = JSON.parse(fileContent);
+    // const fileContent = fs.readFileSync('./xwalk-test.json', 'utf8');
+    core.info(rumData);
+    const allChunks = JSON.parse(rumData);
     const eventFilters = {
       checkpoint: 'experiment',
     };
