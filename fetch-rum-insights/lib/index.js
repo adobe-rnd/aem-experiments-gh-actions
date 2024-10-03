@@ -3,6 +3,8 @@ import { fetchBundles } from '../common/rum-bundler-client.js';
 import {
   applyFilters,
 } from '../common/aggregations.js';
+import json from '../lib/xwalk-test.json';
+
 
 
 /**
@@ -62,7 +64,8 @@ async function run() {
   try {
     const context = getActionContext();
     const experimentInsights = {};
-    const allChunks = await fetchBundles(context.domain, context.days, context.domainKey);
+    // const allChunks = await fetchBundles(context.domain, context.days, context.domainKey);
+    const allChunks = json;
     const eventFilters = {
       checkpoint: 'experiment',
     };
