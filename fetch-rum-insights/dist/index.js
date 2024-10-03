@@ -27068,6 +27068,7 @@ async function run() {
     const experimentInsights = {};
     // const allChunks = await fetchBundles(context.domain, context.days, context.domainKey);
     const fileContent = external_fs_default().readFileSync('./xwalk-test.json', 'utf8');
+    core.info(fileContent);
     const allChunks = JSON.parse(fileContent);
     const eventFilters = {
       checkpoint: 'experiment',
