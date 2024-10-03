@@ -3,7 +3,8 @@ import { fetchBundles } from '../common/rum-bundler-client.js';
 import {
   applyFilters,
 } from '../common/aggregations.js';
-import json from '../lib/xwalk-test.json';
+import fs from 'fs';
+
 
 
 
@@ -65,7 +66,12 @@ async function run() {
     const context = getActionContext();
     const experimentInsights = {};
     // const allChunks = await fetchBundles(context.domain, context.days, context.domainKey);
-    const allChunks = json;
+    // const fs = require('fs').promises;
+    const path = require('path');
+
+    const filePath = path.join(__dirname, 'xwalk-test.json');
+    const fileContent = await fs.readFile(filePath, 'utf-8');
+    const allChunks = JSON.parse(fileContent);
     const eventFilters = {
       checkpoint: 'experiment',
     };
