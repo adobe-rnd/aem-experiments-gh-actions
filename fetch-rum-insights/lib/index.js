@@ -63,7 +63,9 @@ function getOrCreateVariantObject(variants, variantName) {
  */
 async function run() {
   try {
+    console.log('Fetching RUM insights...');
     const context = getActionContext();
+    console.log(context);
     const experimentInsights = {};
     // const allChunks = await fetchBundles(context.domain, context.days, context.domainKey);
     // const fs = require('fs');
