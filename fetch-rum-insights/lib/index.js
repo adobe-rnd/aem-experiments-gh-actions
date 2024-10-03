@@ -65,55 +65,10 @@ function getOrCreateVariantObject(variants, variantName) {
 async function run() {
   try {
     core.info('Fetching RUM insights...');
-    const context = getActionContext();
-    core.info(context);
-    const experimentInsights = {};
-    // const allChunks = await fetchBundles(context.domain, context.days, context.domainKey);
-    // const fileContent = fs.readFileSync('./xwalk-test.json', 'utf8');
-    core.info(rumData);
-    const allChunks = JSON.parse(rumData);
-    const eventFilters = {
-      checkpoint: 'experiment',
-    };
-    const experimentChunks = applyFilters(allChunks, {}, eventFilters);
-    for (let i = 0; i < experimentChunks.length; i++) {
-      const chunk = experimentChunks[i];
-      const url = chunk.url;
-      const views = chunk.weight;
-      if (!experimentInsights[url]) {
-        experimentInsights[url] = [];
-      }
-      let experimentEvent = chunk.events.find(e => e.checkpoint === 'experiment');
-      if (!experimentEvent) {
-        continue;
-      }
-      const experimentName = experimentEvent.source;
-      const variantName = experimentEvent.target;
-      let experimentObject = getOrCreateExperimentObject(experimentInsights[url], experimentName);
-      let variantObject = getOrCreateVariantObject(experimentObject.variants, variantName);
-      variantObject.views += views;
 
-      for (const event of chunk.events) {
-        if (event.checkpoint === 'click' ) {
-          const clickSource = event.source;
-          if (!variantObject.clicks[clickSource]) {
-            variantObject.clicks[clickSource] = views;
-          } else {
-            variantObject.clicks[clickSource] += views;
-          }
-        } else if (event.checkpoint === 'convert') {
-          const convertSource = event.source;
-          if (!variantObject.conversions[convertSource]) {
-            variantObject.conversions[convertSource] = views;
-          } else {
-            variantObject.conversions[convertSource] += views;
-          }
-        }
-      }
-    }
-    core.info(JSON.stringify(experimentInsights, null, 2));
-    core.setOutput('data', JSON.stringify(experimentInsights));
-    return experimentInsights;
+    core.info(JSON.stringify(rumData, null, 2));
+    core.setOutput('data', JSON.stringify(rumData));
+    return rumData;
   } catch (err) {
     core.setFailed(err.message);
   }
