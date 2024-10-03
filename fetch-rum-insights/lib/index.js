@@ -66,7 +66,7 @@ async function run() {
     const context = getActionContext();
     const experimentInsights = {};
     // const allChunks = await fetchBundles(context.domain, context.days, context.domainKey);
-    // const fs = require('fs').promises;
+    const fs = require('fs').promises;
     const path = require('path');
 
     const filePath = path.join(__dirname, 'xwalk-test.json');
